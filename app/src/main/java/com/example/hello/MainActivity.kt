@@ -32,7 +32,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-
 //            if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
 //                val permission = arrayOf<String>(Manifest.permission.CAMERA)
 //                requestPermissions(permission, 112)
