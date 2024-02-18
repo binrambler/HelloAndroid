@@ -32,10 +32,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+
 //            if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
 //                val permission = arrayOf<String>(Manifest.permission.CAMERA)
 //                requestPermissions(permission, 112)
 //            }
+
             val cameraPermission = rememberPermissionState(
                 android.Manifest.permission.CAMERA
             )
@@ -44,28 +46,29 @@ class MainActivity : ComponentActivity() {
                     cameraPermission.launchPermissionRequest()
                 }
             }
-            val camera = remember { BarcodeCamera() }
-            var lastScannedBarcode by remember { mutableStateOf<String?>(null) }
-
-            Column(modifier = Modifier.fillMaxSize()) {
-                Row (modifier = Modifier.fillMaxWidth().weight(0.4F)){
-                    Box(modifier= Modifier.fillMaxSize()){
-                        if (cameraPermission.status.isGranted) {
-                            camera.CameraPreview(
-                                onBarcodeScanned = { barcode ->
-                                    barcode?.displayValue?.let {
-                                        lastScannedBarcode = it
-                                        Toast.makeText(this@MainActivity, it, Toast.LENGTH_LONG).show()
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-                Row (modifier = Modifier.fillMaxWidth().weight(0.6F)){
-
-                }
-            }
+            CameraScreen()
+//            val camera = remember { BarcodeCamera() }
+//            var lastScannedBarcode by remember { mutableStateOf<String?>(null) }
+//
+//            Column(modifier = Modifier.fillMaxSize()) {
+//                Row (modifier = Modifier.fillMaxWidth().weight(0.4F)){
+//                    Box(modifier= Modifier.fillMaxSize()){
+//                        if (cameraPermission.status.isGranted) {
+//                            camera.CameraPreview(
+//                                onBarcodeScanned = { barcode ->
+//                                    barcode?.displayValue?.let {
+//                                        lastScannedBarcode = it
+//                                        Toast.makeText(this@MainActivity, it, Toast.LENGTH_LONG).show()
+//                                    }
+//                                }
+//                            )
+//                        }
+//                    }
+//                }
+//                Row (modifier = Modifier.fillMaxWidth().weight(0.6F)){
+//
+//                }
+//            }
         }
     }
 }
