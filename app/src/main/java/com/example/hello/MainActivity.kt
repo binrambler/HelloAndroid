@@ -45,7 +45,12 @@ class MainActivity : ComponentActivity() {
                     cameraPermission.launchPermissionRequest()
                 }
             }
-            CameraScreen()
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row (modifier = Modifier.weight(0.6F)){
+                    CameraScreen()
+                }
+                Row (modifier = Modifier.weight(0.4F)){}
+            }
 //            val camera = remember { BarcodeCamera() }
 //            var lastScannedBarcode by remember { mutableStateOf<String?>(null) }
 //

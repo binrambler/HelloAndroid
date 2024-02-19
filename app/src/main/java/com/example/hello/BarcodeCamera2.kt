@@ -1,7 +1,6 @@
 package com.example.hello
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -73,14 +72,21 @@ class BarcodeAnalyzer(private val context: Context) : ImageAnalysis.Analyzer {
 
 class MlKitCodeAnalyzer(private val barcodeListener: Context) : ImageAnalysis.Analyzer {
 
-    private val scanner = BarcodeScanning.getClient(
-        defaultOptions()
-    )
+    private val options = BarcodeScannerOptions.Builder()
+        .setBarcodeFormats(
+//        Barcode.FORMAT_QR_CODE,
+//        Barcode.FORMAT_AZTEC,
+            Barcode.FORMAT_CODE_128,
+//        Barcode.FORMAT_CODE_39,
+//        Barcode.FORMAT_CODE_93,
+            Barcode.FORMAT_EAN_8,
+            Barcode.FORMAT_EAN_13,
+//        Barcode.FORMAT_UPC_A,
+//        Barcode.FORMAT_UPC_E,
+//        Barcode.FORMAT_PDF417
+        ).build()
 
-    private fun defaultOptions() = BarcodeScannerOptions.Builder().setBarcodeFormats(
-        Barcode.FORMAT_EAN_13,
-        Barcode.FORMAT_EAN_8,
-    ).build()
+    private val scanner = BarcodeScanning.getClient(options)
 
     @OptIn(ExperimentalGetImage::class)
     @SuppressLint("UnsafeExperimentalUsageError")
@@ -89,10 +95,11 @@ class MlKitCodeAnalyzer(private val barcodeListener: Context) : ImageAnalysis.An
         val mlImage = InputImage.fromMediaImage(mediaImage, image.imageInfo.rotationDegrees)
         val currentTimestamp = System.currentTimeMillis()
         scanner.process(mlImage).addOnSuccessListener { barcodes ->
-            barcodes.firstOrNull()?.let {
-                it.rawValue?.let {
+            barcodes.firstOrNull()?.let {barcode ->
+                barcode.rawValue?.let {it ->
                     Toast.makeText(barcodeListener, it, Toast.LENGTH_SHORT).show()
-                    barcodeListener }
+//                    barcodeListener
+                }
             }
         }.addOnCompleteListener {
             // Позволяет производить сканирование раз в секунду
@@ -116,35 +123,34 @@ fun CameraScreen() {
         factory = { context ->
             val previewView = PreviewView(context)
             val preview = Preview.Builder().build()
-            val selector = CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build()
+
+            // делаем, чтоб не превью с камеры не занимало весь экран
+            previewView.scaleType = PreviewView.ScaleType.FILL_END
 
             preview.setSurfaceProvider(previewView.surfaceProvider)
 
-//            val imageAnalysis = ImageAnalysis.Builder().build()
-//            imageAnalysis.setAnalyzer(
-//                ContextCompat.getMainExecutor(context),
-//                BarcodeAnalyzer(context)
-//            )
+            // Важно выставить backpressure-стратегию
+            // STRATEGY_KEEP_ONLY_LATEST в нашем случае подходит идеально,
+            // так как модель распознания кодов из mlKit работает весьма шустро
             val imageAnalysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build()
+
+            // подключаем анализатор
             imageAnalysis.setAnalyzer(
                 ContextCompat.getMainExecutor(context),
                 MlKitCodeAnalyzer(context)
-//                val analyzer : ImageAnalysis . Analyzer = MlKitCodeAnalyzer (
-//                    barcodeListener = onData,
             )
 
             runCatching {
                 cameraProviderFuture.get().bindToLifecycle(
                     lifecycleOwner,
-                    selector,
+                    CameraSelector.DEFAULT_BACK_CAMERA,
                     preview,
                     imageAnalysis
                 )
             }.onFailure {
-                Log.e("CAMERA", "Camera bind error ${it.localizedMessage}", it)
+                Toast.makeText(context, "Camera bind error ${it.localizedMessage}", Toast.LENGTH_LONG).show()
+//                Log.e("CAMERA", "Camera bind error ${it.localizedMessage}", it)
             }
             previewView
         }
