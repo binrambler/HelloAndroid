@@ -28,47 +28,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class BarcodeAnalyzer(private val context: Context) : ImageAnalysis.Analyzer {
-    private val options = BarcodeScannerOptions.Builder()
-        .setBarcodeFormats(
-            Barcode.FORMAT_QR_CODE,
-            Barcode.FORMAT_AZTEC,
-            Barcode.FORMAT_CODE_128,
-            Barcode.FORMAT_CODE_39,
-            Barcode.FORMAT_CODE_93,
-            Barcode.FORMAT_EAN_8,
-            Barcode.FORMAT_EAN_13,
-            Barcode.FORMAT_QR_CODE,
-            Barcode.FORMAT_UPC_A,
-            Barcode.FORMAT_UPC_E,
-            Barcode.FORMAT_PDF417
-        )
-        .enableAllPotentialBarcodes()
-        .build()
-
-    private val scanner = BarcodeScanning.getClient(options)
-
-
-    @SuppressLint("UnsafeOptInUsageError")
-    override fun analyze(imageProxy: ImageProxy) {
-        imageProxy.image
-            ?.let { image ->
-                scanner.process(
-                    InputImage.fromMediaImage(
-                        image, imageProxy.imageInfo.rotationDegrees
-                    )
-                ).addOnSuccessListener { barcode ->
-                    barcode?.takeIf { it.isNotEmpty() }
-                        ?.mapNotNull { it.rawValue }
-                        ?.joinToString(",")
-                        ?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
-                }.addOnCompleteListener {
-                    imageProxy.close()
-                }
-            }
-    }
-}
-
 
 class MlKitCodeAnalyzer(private val barcodeListener: Context) : ImageAnalysis.Analyzer {
 
